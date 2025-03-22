@@ -22,6 +22,7 @@ type Character struct {
 	Gold               int           `json:"gold"`
 	Speed              int           `json:"speed"`
 	Hp                 int           `json:"hp"`
+	MaxHp              int           `json:"max_hp"`
 	Haste              int           `json:"haste"`
 	CriticalStrike     int           `json:"critical_strike"`
 	Stamina            int           `json:"stamina"`
