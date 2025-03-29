@@ -17,8 +17,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	client := artifactsmmo.NewClient(os.Args[1], os.Args[2])
-	character, err := client.GetCharacterInfo(os.Args[2])
+	client := artifactsmmo.NewClient(APIKEY, fighterChar)
+	character, err := client.GetCharacterInfo(fighterChar)
+
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)

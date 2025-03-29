@@ -11,14 +11,20 @@ func usage() {
 	fmt.Println("Usage: go run main.go <api-token> <character-name>")
 }
 
+// API-key
+const APIKEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InBhYmxveXVyaXNzQGdtYWlsLmNvbSIsInBhc3N3b3JkX2NoYW5nZWQiOiIifQ.NkQ7MduReGrZSyFxjOJ4dFfMkbGXrb-c8GdrkTM_cgQ"
+
+// Characters
+const fighterChar = "Vespa"
+
 func main() {
 	if len(os.Args) < 3 {
 		usage()
 		os.Exit(1)
 	}
 
-	client := artifactsmmo.NewClient(os.Args[1], os.Args[2])
-	character, err := client.GetCharacterInfo(os.Args[2])
+	client := artifactsmmo.NewClient(APIKEY, fighterChar)
+	character, err := client.GetCharacterInfo(fighterChar)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

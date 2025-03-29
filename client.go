@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/0xN0x/go-artifactsmmo/internal/api"
 	"github.com/0xN0x/go-artifactsmmo/internal/client"
@@ -40,10 +41,17 @@ func NewClientWithCustomHttpClient(token string, username string, httpClient *ht
 func (c *ArtifactsMMO) Fight() (*models.CharacterFight, error) {
 	var fight models.CharacterFight
 
-	_, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/fight", c.Config.GetUsername())).SetResultStruct(&fight).Run()
+	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/fight", c.Config.GetUsername())).SetResultStruct(&fight).Run()
 	if err != nil {
 		return nil, err
 	}
+
+	switch res.StatusCode {
+	case 200:
+		waitCooldown(fight.Cooldown.RemainingSeconds)
+	}
+
+	fmt.Printf("Fight result:[%s] +%d xp, +%d gold\n", fight.Fight.Result, fight.Fight.Xp, fight.Fight.Gold)
 
 	return &fight, nil
 }
@@ -75,6 +83,14 @@ func (c *ArtifactsMMO) Move(x int, y int) (*models.CharacterMovementData, error)
 		return nil, models.ErrMapNotFound
 	case 490:
 		return nil, models.ErrAlreadyAtDestination
+	case 200:
+		fmt.Printf("Moved in [%d, %d]! type=%s, code=%s\n",
+			move.Destination.X,
+			move.Destination.Y,
+			move.Destination.Content.Type,
+			move.Destination.Content.Code,
+		)
+		waitCooldown(move.Cooldown.RemainingSeconds)
 	}
 
 	return &move, nil
@@ -866,6 +882,10 @@ func (c *ArtifactsMMO) Rest() (*models.Rest, error) {
 	}
 
 	return &ret, nil
+}
+
+func waitCooldown(seconds int) {
+	time.Sleep(time.Duration(seconds) * time.Second)
 }
 
 func (c *ArtifactsMMO) UseItem(code string, quantity int) (*models.UseItem, error) {
