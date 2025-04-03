@@ -1,5 +1,12 @@
 package models
 
+type DataSchemaCharacterAction struct {
+	Cooldown  Cooldown  `json:"cooldown"`
+	Fight     Fight     `json:"fight"`
+	Character Character `json:"character"`
+	Detail    Detail    `json:"details"`
+}
+
 type CharacterMovementData struct {
 	Cooldown    Cooldown    `json:"cooldown"`
 	Destination Destination `json:"destination"`

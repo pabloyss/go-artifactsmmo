@@ -31,6 +31,11 @@ type Character struct {
 	X int `json:"x"`
 	Y int `json:"y"`
 
+	// Alchemy
+	AlchemyLevel int `json:"alchemy_level"`
+	AlchemyXp    int `json:"alchemy_xp"`
+	AlchemyMaxXp int `json:"alchemy_max_xp"`
+
 	// Mining
 	MiningLevel int `json:"mining_level"`
 	MiningXp    int `json:"mining_xp"`
@@ -120,20 +125,20 @@ type InventorySlots struct {
 type Slot string
 
 const (
-	Weapon      Slot = "weapon"
-	Shield      Slot = "shield"
-	Helmet      Slot = "helmet"
-	BodyArmor   Slot = "body_armor"
-	LegArmor    Slot = "leg_armor"
-	Boots       Slot = "boots"
-	Ring1       Slot = "ring1"
-	Ring2       Slot = "ring2"
-	Amulet      Slot = "amulet"
-	Artifact1   Slot = "artifact1"
-	Artifact2   Slot = "artifact2"
-	Artifact3   Slot = "artifact3"
-	Consumable1 Slot = "consumable1"
-	Consumable2 Slot = "consumable2"
+	Weapon    Slot = "weapon"
+	Shield    Slot = "shield"
+	Helmet    Slot = "helmet"
+	BodyArmor Slot = "body_armor"
+	LegArmor  Slot = "leg_armor"
+	Boots     Slot = "boots"
+	Ring1     Slot = "ring1"
+	Ring2     Slot = "ring2"
+	Amulet    Slot = "amulet"
+	Artifact1 Slot = "artifact1"
+	Artifact2 Slot = "artifact2"
+	Artifact3 Slot = "artifact3"
+	Utility1  Slot = "utility1"
+	Utility2  Slot = "utility2"
 )
 
 type ItemInventory struct {

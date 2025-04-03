@@ -38,8 +38,8 @@ func NewClientWithCustomHttpClient(token string, username string, httpClient *ht
 }
 
 // Start a fight against a monster on the character's map.
-func (c *ArtifactsMMO) Fight() (*models.CharacterFight, error) {
-	var fight models.CharacterFight
+func (c *ArtifactsMMO) Fight() (*models.DataSchemaCharacterAction, error) {
+	var fight models.DataSchemaCharacterAction
 
 	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/fight", c.Config.GetUsername())).SetResultStruct(&fight).Run()
 	if err != nil {
@@ -90,15 +90,15 @@ func (c *ArtifactsMMO) Move(x int, y int) (*models.CharacterMovementData, error)
 			move.Destination.Content.Type,
 			move.Destination.Content.Code,
 		)
-		waitCooldown(move.Cooldown.RemainingSeconds)
+		waitCooldown(move.Cooldown.TotalSeconds)
 	}
 
 	return &move, nil
 }
 
 // Equip an item on your character.
-func (c *ArtifactsMMO) Equip(code string, slot models.Slot, quantity int) (*models.EquipRequest, error) {
-	var equip models.EquipRequest
+func (c *ArtifactsMMO) Equip(code string, slot models.Slot, quantity int) (*models.DataSchemaCharacterAction, error) {
+	var equip models.DataSchemaCharacterAction
 
 	body := models.ItemInventory{Code: code, Slot: slot, Quantity: quantity}
 	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/equip", c.Config.GetUsername())).SetResultStruct(&equip).SetBody(body).Run()
@@ -117,6 +117,8 @@ func (c *ArtifactsMMO) Equip(code string, slot models.Slot, quantity int) (*mode
 		return nil, models.ErrSlotNotEmpty
 	case 496:
 		return nil, models.ErrLevelTooLow
+	case 200:
+		waitCooldown(equip.Cooldown.RemainingSeconds)
 	}
 
 	return &equip, nil
@@ -141,8 +143,8 @@ func (c *ArtifactsMMO) Unequip(slot models.Slot, quantity int) (*models.EquipReq
 }
 
 // Harvest a resource on the character's map.
-func (c *ArtifactsMMO) Gather() (*models.SkillData, error) {
-	var skill models.SkillData
+func (c *ArtifactsMMO) Gather() (*models.DataSchemaCharacterAction, error) {
+	var skill models.DataSchemaCharacterAction
 
 	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/gathering", c.Config.GetUsername())).SetResultStruct(&skill).Run()
 	if err != nil {
@@ -154,6 +156,10 @@ func (c *ArtifactsMMO) Gather() (*models.SkillData, error) {
 		return nil, models.ErrInsufficientSkillLevel
 	case 598:
 		return nil, models.ErrRessourceNotFound
+	case 200:
+		fmt.Printf("Gather +%d xp\n", skill.Detail.Xp)
+		// TODO: Show items received
+		waitCooldown(skill.Cooldown.RemainingSeconds)
 	}
 
 	return &skill, nil
@@ -245,8 +251,8 @@ func (c *ArtifactsMMO) TaskCancel() (*models.TaskCancelled, error) {
 	return &task, nil
 }
 
-func (c *ArtifactsMMO) Craft(code string, quantity int) (*models.SkillData, error) {
-	var ret models.SkillData
+func (c *ArtifactsMMO) Craft(code string, quantity int) (*models.DataSchemaCharacterAction, error) {
+	var ret models.DataSchemaCharacterAction
 
 	body := models.SimpleItem{Code: code, Quantity: quantity}
 	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/crafting", c.Config.GetUsername())).SetResultStruct(&ret).SetBody(body).Run()
@@ -261,6 +267,8 @@ func (c *ArtifactsMMO) Craft(code string, quantity int) (*models.SkillData, erro
 		return nil, models.ErrInsufficientSkillLevel
 	case 598:
 		return nil, models.ErrWorkshopNotFound
+	case 200:
+		waitCooldown(ret.Cooldown.RemainingSeconds)
 	}
 
 	return &ret, nil
@@ -289,8 +297,8 @@ func (c *ArtifactsMMO) Recycling(code string, quantity int) (*models.Recycling, 
 	return &ret, nil
 }
 
-func (c *ArtifactsMMO) DepositBank(code string, quantity int) (*models.BankItemTransaction, error) {
-	var ret models.BankItemTransaction
+func (c *ArtifactsMMO) DepositBank(code string, quantity int) (*models.DataSchemaCharacterAction, error) {
+	var ret models.DataSchemaCharacterAction
 
 	body := models.SimpleItem{Code: code, Quantity: quantity}
 
@@ -308,6 +316,8 @@ func (c *ArtifactsMMO) DepositBank(code string, quantity int) (*models.BankItemT
 		return nil, models.ErrBankFull
 	case 598:
 		return nil, models.ErrBankNotFound
+	case 200:
+		waitCooldown(ret.Cooldown.RemainingSeconds)
 	}
 
 	return &ret, nil
@@ -334,8 +344,8 @@ func (c *ArtifactsMMO) DepositBankGold(quantity int) (*models.BankGoldTransactio
 	return &ret, nil
 }
 
-func (c *ArtifactsMMO) WithdrawBank(code string, quantity int) (*models.BankItemTransaction, error) {
-	var ret models.BankItemTransaction
+func (c *ArtifactsMMO) WithdrawBank(code string, quantity int) (*models.DataSchemaCharacterAction, error) {
+	var ret models.DataSchemaCharacterAction
 
 	body := models.SimpleItem{Code: code, Quantity: quantity}
 	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/bank/withdraw", c.Config.GetUsername())).SetResultStruct(&ret).SetBody(body).Run()
@@ -350,6 +360,8 @@ func (c *ArtifactsMMO) WithdrawBank(code string, quantity int) (*models.BankItem
 		return nil, models.ErrTransactionInProgress
 	case 598:
 		return nil, models.ErrBankNotFound
+	case 200:
+		waitCooldown(ret.Cooldown.RemainingSeconds)
 	}
 
 	return &ret, nil
@@ -873,12 +885,17 @@ func (c *ArtifactsMMO) GetTaskReward(code string) (*models.TaskRewardFull, error
 	return &ret, nil
 }
 
-func (c *ArtifactsMMO) Rest() (*models.Rest, error) {
-	var ret models.Rest
+func (c *ArtifactsMMO) Rest() (*models.DataSchemaCharacterAction, error) {
+	var ret models.DataSchemaCharacterAction
 
-	_, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/rest", c.Config.GetUsername())).SetResultStruct(&ret).Run()
+	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/rest", c.Config.GetUsername())).SetResultStruct(&ret).Run()
 	if err != nil {
 		return nil, err
+	}
+
+	switch res.StatusCode {
+	case 200:
+		waitCooldown(ret.Cooldown.RemainingSeconds)
 	}
 
 	return &ret, nil
@@ -888,13 +905,18 @@ func waitCooldown(seconds int) {
 	time.Sleep(time.Duration(seconds) * time.Second)
 }
 
-func (c *ArtifactsMMO) UseItem(code string, quantity int) (*models.UseItem, error) {
-	var ret models.UseItem
+func (c *ArtifactsMMO) UseItem(code string, quantity int) (*models.DataSchemaCharacterAction, error) {
+	var ret models.DataSchemaCharacterAction
 
 	body := models.SimpleItem{Code: code, Quantity: quantity}
-	_, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/use", c.Config.GetUsername())).SetResultStruct(&ret).SetBody(body).Run()
+	res, err := api.NewRequest(c.Config).SetMethod("POST").SetURL(fmt.Sprintf("/my/%s/action/use", c.Config.GetUsername())).SetResultStruct(&ret).SetBody(body).Run()
 	if err != nil {
 		return nil, err
+	}
+
+	switch res.StatusCode {
+	case 200:
+		waitCooldown(ret.Cooldown.RemainingSeconds)
 	}
 
 	return &ret, nil
